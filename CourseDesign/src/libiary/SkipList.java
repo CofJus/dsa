@@ -81,6 +81,7 @@ public class SkipList<T> {
         SkipListNode<T> q = new SkipListNode<>(key, value);
         insertNode(p, q);
 
+        //随机决定是否升层
         int currentLevel = 0;
         while (random.nextDouble() > PROBABILITY) {
             if (currentLevel >= listLevel) {

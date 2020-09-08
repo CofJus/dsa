@@ -9,10 +9,13 @@ import java.util.HashMap;
  */
 public class ManagementSystem {
 
-    SkipList<Book> skipList;
+    SkipList<Book> bookSkipList;
+
+    SkipList<Student> studentSkipList;
 
     public ManagementSystem() {
-        skipList = new SkipList<>();
+        this.bookSkipList = new SkipList<>();
+        this.studentSkipList = new SkipList<>();
     }
 
     /**
@@ -23,14 +26,14 @@ public class ManagementSystem {
      */
     public boolean addBook(Book book) {
         int id = book.getId();
-        if(null == skipList.get(book.getId())) {
-            skipList.put(id, book);
+        if(null == bookSkipList.get(book.getId())) {
+            bookSkipList.put(id, book);
             return true;
         }
         else {
-            int curStock = skipList.get(id).value.getExistingStock();
-            skipList.get(id).value.setExistingStock(curStock + 1);
-            skipList.get(id).value.setTotalStock(skipList.get(id).value.getTotalStock() + 1);
+            int curStock = bookSkipList.get(id).value.getExistingStock();
+            bookSkipList.get(id).value.setExistingStock(curStock + book.getExistingStock());
+            bookSkipList.get(id).value.setTotalStock(bookSkipList.get(id).value.getTotalStock() + book.getTotalStock());
             return false;
         }
     }
@@ -40,21 +43,28 @@ public class ManagementSystem {
      * @param bookId 要借出的图书id
      * @param readerId 读者借阅证号
      * @param date 借书日期
-     * @return a)馆藏中没有本书(-1) b)馆藏数不足(0) c)成功借出(1)
+     * @return a)馆藏中没有本书(-1) b)馆藏数不足(0) c)成功借出(1) d)无该学生信息(-2)
      */
-    public int lendBook(int bookId, String readerId, Date date) {
-        if(null == skipList.get(bookId)) {
+    public int lendBook(int bookId, int readerId, Date date) {
+        if(null == bookSkipList.get(bookId)) {
             return -1;
         }
-        Book book = skipList.get(bookId).value;
+
+        if(null == studentSkipList.get(readerId)) {
+            return -2;
+        }
+
+        Book book = bookSkipList.get(bookId).value;
         if(0 > book.getExistingStock()) {
             return 0;
         }
-        HashMap<String, Date> hashMap = book.getInformation();
-        hashMap.put(readerId, date);
-        book.setInformation(hashMap);
+        //设置为5分钟后归还
+        book.getInformation().put(readerId, new Date(date.getTime() + 300000));
         book.setExistingStock(book.getTotalStock() - 1);
-        skipList.get(bookId).setValue(book);
+        bookSkipList.get(bookId).setValue(book);
+
+        studentSkipList.get(readerId).getValue().getInformation().put(bookId, new Date(date.getTime() + 300000));
+        //System.out.println("hash------"+studentSkipList.get(readerId).getValue().getInformation());
         return 1;
     }
 
@@ -65,20 +75,55 @@ public class ManagementSystem {
      * @param curDate 还书时间
      * @return a)馆藏中没有本书(-1) b)超期归还(0) c)按时归还(1)
      */
-    public int returnBook(int bookId, String readerId, Date curDate) {
-        if(null == skipList.get(bookId)) {
+    public int returnBook(int bookId, int readerId, Date curDate) {
+        if(null == bookSkipList.get(bookId)) {
             return -1;
         }
-        Book book = skipList.get(bookId).value;
+        Book book = bookSkipList.get(bookId).value;
         book.setExistingStock(book.getExistingStock() + 1);
-        HashMap<String, Date> hashMap = book.getInformation();
+        HashMap<Integer, Date> hashMap = book.getInformation();
         Date date = hashMap.get(readerId);
         hashMap.remove(readerId);
         book.setInformation(hashMap);
-        skipList.get(bookId).setValue(book);
+        bookSkipList.get(bookId).setValue(book);
+        studentSkipList.get(readerId).getValue().getInformation().remove(bookId);
         if(date.before(curDate)) {
             return 0;
         }
         return 1;
+    }
+
+    /**
+     * 录入学生信息
+     * @param student the student
+     * @return 是否已经存在学生信息,是(false),否(true)
+     */
+    public boolean addStudent(Student student) {
+        int id = student.getId();
+        if(null != studentSkipList.get(id)) {
+            return false;
+        }
+        else {
+            studentSkipList.put(id, student);
+            return true;
+        }
+    }
+
+    /**
+     * 查找学生信息
+     * @param id the id
+     * @return the student
+     */
+    public Student findStudent(int id) {
+        return studentSkipList.get(id).getValue();
+    }
+
+    /**
+     * 查找图书信息
+     * @param id the id
+     * @return the book
+     */
+    public Book findBook(int id) {
+        return bookSkipList.get(id).value;
     }
 }

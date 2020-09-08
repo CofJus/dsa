@@ -1,6 +1,7 @@
 package libiary;
 
 import java.util.Date;
+import java.util.Scanner;
 
 /**
  * @author Ji Rui
@@ -12,77 +13,115 @@ public class Test {
 
         ManagementSystem managementSystem = new ManagementSystem();
 
-        init(managementSystem);
+        initBook(managementSystem);
+        initStudent(managementSystem);
+        initView();
 
-        Book book;
+        Scanner scanner = new Scanner(System.in);
+        int instruction = 0;
 
-        System.out.println(managementSystem.skipList.get(10001).value.toString());
-
-        boolean f = managementSystem.addBook(new Book(10001));
-
-        if(f == Boolean.TRUE) {
-            System.out.println("采购成功！");
-        } else {
-            System.out.println("增加库存");
+        while (true) {
+            instruction = scanner.nextInt();
+            if (0 == instruction) {
+                break;
+            } else if (1 == instruction) {
+                System.out.println("-----查找-----");
+                System.out.println("-----输入要查找的书号-----");
+                int bookId = scanner.nextInt();
+                Book book = managementSystem.findBook(bookId);
+                System.out.println(book.toString());
+            } else if (2 == instruction) {
+                System.out.println("-----采购入库-----");
+                System.out.println("-----输入要入库的书号-----");
+                int bookId = scanner.nextInt();
+                System.out.println("-----输入采购量-----");
+                int count = scanner.nextInt();
+                boolean flag = managementSystem.addBook(getNewBook(bookId, "", "", count, count));
+                if (flag == Boolean.TRUE) {
+                    System.out.println("-----采购成功！-----");
+                } else {
+                    System.out.println("-----增加库存-----");
+                }
+                System.out.println("-----采购后图书信息-----");
+                System.out.println(managementSystem.bookSkipList.get(bookId).value.toString());
+            } else if (3 == instruction) {
+                System.out.println("-----借书-----");
+                System.out.println("-----输入借阅证号-----");
+                int readerId = scanner.nextInt();
+                System.out.println("-----输入书号-----");
+                int bookId = scanner.nextInt();
+                int flag = managementSystem.lendBook(bookId, readerId, new Date());
+                if (-1 == flag) {
+                    System.out.println("-----图书馆中没有本书-----");
+                } else if (0 == flag) {
+                    System.out.println("-----库存不足-----");
+                } else if (-2 == flag) {
+                    System.out.println("-----学生信息不存在-----");
+                } else if (1 == flag) {
+                    System.out.println("-----借出成功-----");
+                }
+                System.out.println("-----借书后图书信息-----");
+                System.out.println(managementSystem.bookSkipList.get(bookId).value.toString());
+                System.out.println("-----借书后读者信息-----");
+                System.out.println(managementSystem.studentSkipList.get(readerId).value.toString());
+            } else if (4 == instruction) {
+                System.out.println("-----还书-----");
+                System.out.println("-----输入借阅证号-----");
+                int readerId = scanner.nextInt();
+                System.out.println("-----输入书号-----");
+                int bookId = scanner.nextInt();
+                int flag = managementSystem.returnBook(bookId, readerId, new Date());
+                if (1 == flag) {
+                    System.out.println("成功归还！");
+                } else if (0 == flag) {
+                    System.out.println("超期归还");
+                } else if (-1 == flag) {
+                    System.out.println("不是本馆藏书");
+                }
+                System.out.println("-----还书后图书信息-----");
+                System.out.println(managementSystem.bookSkipList.get(bookId).value.toString());
+                System.out.println("-----还书后读者信息-----");
+                System.out.println(managementSystem.studentSkipList.get(readerId).value.toString());
+            } else if (5 == instruction) {
+                System.out.println("-----学生信息-----");
+                System.out.println("-----输入借阅证号-----");
+                int readerId = scanner.nextInt();
+                System.out.println(managementSystem.findStudent(readerId).toString());
+            } else if (9 == instruction) {
+                System.out.println("-----退出-----");
+                break;
+            }
         }
-
-        System.out.println("-----采购入库-----");
-
-        System.out.println(managementSystem.skipList.get(10001).value.toString());
-
-        int flag = managementSystem.lendBook(10001, "1806010633", new Date());
-        System.out.println("应还时间："+(new Date()).toString());
-
-        if(1 == flag) {
-            System.out.println("借出成功！");
-        } else if(0 == flag) {
-            System.out.println("库存不足");
-        } else if(-1 == flag) {
-            System.out.println("未收录");
-        }
-
-        System.out.println("-----借出-----");
-
-        System.out.println(managementSystem.skipList.get(10001).value.toString());
-
-        flag = managementSystem.returnBook(10001, "1806010633", new Date());
-        System.out.println("归还时间："+(new Date()).toString());
-
-        if(1 == flag) {
-            System.out.println("成功归还！");
-        } else if(0 == flag) {
-            System.out.println("超期归还");
-        } else if(-1 == flag) {
-            System.out.println("不是本馆藏书");
-        }
-
-        System.out.println(managementSystem.skipList.get(10001).value.toString());
     }
 
-    public static void init(ManagementSystem managementSystem) {
+    public static Book getNewBook(int id, String name, String author, int existingStock, int totalStock) {
+        Book book = new Book(id);
+        book.setName(name);
+        book.setAuthor(author);
+        book.setExistingStock(existingStock);
+        book.setTotalStock(totalStock);
+        return book;
+    }
 
-        Book book1 = new Book();
-        book1.setId(10001);
-        book1.setName("数据结构");
-        book1.setAuthor("张乃孝");
-        book1.setExistingStock(5);
-        book1.setTotalStock(5);
-        managementSystem.addBook(book1);
+    public static Student getNewStudent(int id, String name) {
+        return new Student(id, name);
+    }
 
-        Book book2 = new Book();
-        book2.setId(10002);
-        book2.setName("计算机组成与系统结构");
-        book2.setAuthor("白中英");
-        book2.setExistingStock(8);
-        book2.setTotalStock(10);
-        managementSystem.addBook(book2);
+    public static void initBook(ManagementSystem managementSystem) {
+        managementSystem.addBook(getNewBook(10001, "数据结构", "张乃孝", 5, 5));
+        managementSystem.addBook(getNewBook(10002, "计算机组成与系统结构", "白中英", 8, 10));
+        managementSystem.addBook(getNewBook(10004, "马克思主义基本原理概论", "马克思主义基本原理概论编写组", 8, 8));
+    }
 
-        Book book3 = new Book();
-        book3.setId(10004);
-        book3.setName("马克思主义基本原理概论");
-        book3.setAuthor("马克思主义基本原理概论编写组");
-        book3.setExistingStock(8);
-        book3.setTotalStock(8);
-        managementSystem.addBook(book3);
+    public static void initStudent(ManagementSystem managementSystem) {
+        managementSystem.addStudent(getNewStudent(1806010633, "季锐"));
+    }
+
+    public static void initView() {
+        System.out.println("1:查找图书信息");
+        System.out.println("2:采购入库");
+        System.out.println("3:借书");
+        System.out.println("4:还书");
+        System.out.println("5:查找读者信息");
     }
 }

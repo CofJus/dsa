@@ -19,7 +19,7 @@ public class Book {
     private int totalStock;
 
     /** <借阅证号, 应还日期> */
-    private HashMap<String, Date> information;
+    private HashMap<Integer, Date> information;
 
     public Book() {
         this.id = -1;
@@ -27,7 +27,7 @@ public class Book {
         this.author = "";
         this.existingStock = 0;
         this.totalStock = 0;
-        information = new HashMap<>();
+        information = new HashMap<Integer, Date>();
     }
 
     public Book(int id) {
@@ -36,7 +36,7 @@ public class Book {
         this.author = "";
         this.existingStock = 0;
         this.totalStock = 0;
-        information = new HashMap<>();
+        information = new HashMap<Integer, Date>();
     }
 
     public int getId() {
@@ -79,11 +79,11 @@ public class Book {
         this.totalStock = totalStock;
     }
 
-    public HashMap<String, Date> getInformation() {
+    public HashMap<Integer, Date> getInformation() {
         return information;
     }
 
-    public void setInformation(HashMap<String, Date> information) {
+    public void setInformation(HashMap<Integer, Date> information) {
         this.information = information;
     }
 
